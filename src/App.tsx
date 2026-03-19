@@ -241,7 +241,7 @@ const Header = ({ title, subtitle, rightElement }: {
   subtitle?: string;
   rightElement?: React.ReactNode;
 }) => (
-  <header className="sticky top-0 z-40 bg-[#111111]/90 backdrop-blur-md px-8 py-5 flex items-center justify-between border-b border-white/5">
+  <header className="sticky top-0 z-40 bg-[#111111]/90 backdrop-blur-md px-4 py-3 flex items-center justify-between border-b border-white/5">
     <div>
       <h1 className="text-2xl font-black tracking-tight text-white">{title}</h1>
       {subtitle && <p className="text-xs font-bold text-white/35 mt-1">{subtitle}</p>}
@@ -261,7 +261,7 @@ const SecondaryHeader = ({ title, source, onBack, rightIcon: RightIcon = MoreHor
   rightIcon?: React.ComponentType<{ size?: number; className?: string }>;
   onRightClick?: () => void;
 }) => (
-  <header className="sticky top-0 z-40 bg-[#111111]/90 backdrop-blur-md px-8 py-4 flex items-center justify-between border-b border-white/5">
+  <header className="sticky top-0 z-40 bg-[#111111]/90 backdrop-blur-md px-4 py-3 flex items-center justify-between border-b border-white/5">
     <motion.button
       whileTap={{ scale: 0.9 }}
       onClick={onBack}
@@ -312,28 +312,41 @@ const ChatInputBox = () => {
     }
   };
   return (
-    <div className="rounded-2xl border border-white/8 bg-white/3 overflow-hidden">
-      <div className="px-5 py-3 border-b border-white/5 flex items-center gap-2">
-        <span className="text-[11px] font-black text-white/30 uppercase tracking-widest">@ 菲菲</span>
-        <span className="size-1.5 rounded-full bg-green-500 animate-pulse" />
-        <span className="text-[10px] text-green-500/70 font-bold">在线</span>
+    <div className="rounded-2xl overflow-hidden" style={{background:'#1a1a2a', border:'1px solid rgba(238,173,43,0.15)'}}>
+      {/* 标题栏 */}
+      <div className="px-4 py-2.5 flex items-center gap-2" style={{background:'#1e1e30', borderBottom:'1px solid rgba(255,255,255,0.06)'}}>
+        <span className="text-base">🌸</span>
+        <span className="text-xs font-black text-white tracking-wide">菲菲</span>
+        <span className="size-1.5 rounded-full bg-green-400 animate-pulse ml-0.5" />
+        <span className="text-[10px] text-green-400/80 font-bold">在线</span>
       </div>
-      <div className="px-5 py-3 flex flex-col gap-2.5 max-h-36 overflow-y-auto">
+      {/* 消息区 */}
+      <div className="px-4 py-3 flex flex-col gap-2 max-h-32 overflow-y-auto hide-scrollbar">
         {messages.map((m, i) => (
-          <div key={i} className={cn('flex gap-2.5', m.role === 'serena' ? 'flex-row-reverse' : '')}>
-            <span className="text-base leading-none mt-0.5 shrink-0">{m.role === 'feifei' ? '🌸' : '👤'}</span>
-            <div className={cn('text-sm px-3.5 py-2 rounded-2xl max-w-[80%]', m.role === 'feifei' ? 'bg-[#eead2b]/10 text-[#f0d080] rounded-tl-sm' : 'bg-white/8 text-white/80 rounded-tr-sm')}>{m.text}</div>
+          <div key={i} className={cn('flex gap-2 items-end', m.role === 'serena' ? 'flex-row-reverse' : '')}>
+            <span className="text-sm shrink-0 mb-0.5">{m.role === 'feifei' ? '🌸' : '👤'}</span>
+            <div className={cn(
+              'text-sm px-3 py-2 rounded-2xl max-w-[78%] leading-relaxed',
+              m.role === 'feifei'
+                ? 'text-[#f5e6a8] rounded-bl-sm'
+                : 'text-white rounded-br-sm'
+            )} style={{
+              background: m.role === 'feifei' ? 'rgba(238,173,43,0.12)' : 'rgba(139,92,246,0.25)',
+              border: m.role === 'feifei' ? '1px solid rgba(238,173,43,0.2)' : '1px solid rgba(139,92,246,0.3)'
+            }}>{m.text}</div>
           </div>
         ))}
       </div>
-      <div className="px-4 py-3 border-t border-white/5 flex gap-3 items-center">
+      {/* 输入区 */}
+      <div className="px-3 py-2.5 flex gap-2 items-center" style={{background:'#16162a', borderTop:'1px solid rgba(255,255,255,0.06)'}}>
         <input
           value={msg}
           onChange={e => setMsg(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && send()}
           placeholder={loading ? '菲菲思考中...' : '跟菲菲说点什么...'}
           disabled={loading}
-          className="flex-1 bg-white/5 border border-white/8 rounded-xl px-4 py-2.5 text-sm text-white/80 placeholder:text-white/25 focus:outline-none focus:border-[#eead2b]/40 disabled:opacity-50"
+          className="flex-1 rounded-xl px-3.5 py-2 text-sm placeholder:text-white/30 focus:outline-none disabled:opacity-50"
+          style={{background:'#252540', border:'1px solid rgba(139,92,246,0.25)', color:'#ffffff'}}
         />
         <button onClick={send} disabled={loading} className="px-4 py-2.5 bg-[#eead2b] text-[#0f0f0f] text-sm font-black rounded-xl hover:bg-[#f5c242] transition-colors disabled:opacity-50">
           {loading ? '...' : '发送'}
@@ -343,50 +356,117 @@ const ChatInputBox = () => {
   );
 };
 
+const DashboardChat = () => {
+  const [msg, setMsg] = React.useState('');
+  const [messages, setMessages] = React.useState([
+    { role: 'feifei', text: '早上好 Serena 🌸 今日7天英语营Day1准备就绪，Alan已上线，随时可以发布任务！' },
+  ]);
+  const [loading, setLoading] = React.useState(false);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const scrollToBottom = () => {
+    setTimeout(() => {
+      if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }, 50);
+  };
+  React.useEffect(() => { scrollToBottom(); }, [messages]);
+  React.useEffect(() => { inputRef.current?.focus(); }, []);
+  const send = async () => {
+    if (!msg.trim() || loading) return;
+    const userMsg = msg.trim();
+    setMessages(prev => [...prev, { role: 'serena', text: userMsg }]);
+    setMsg('');
+    scrollToBottom();
+    inputRef.current?.focus();
+    setLoading(true);
+    try {
+      const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: userMsg }) });
+      const data = await res.json();
+      setMessages(prev => [...prev, { role: 'feifei', text: data.reply }]);
+    } catch {
+      setMessages(prev => [...prev, { role: 'feifei', text: '网络波动，稍后再试 🌸' }]);
+    } finally {
+      setLoading(false);
+      inputRef.current?.focus();
+    }
+  };
+  return (
+    <>
+      {/* 消息滚动区 */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-2 hide-scrollbar">
+        {messages.map((m, i) => (
+          <div key={i} className={cn('flex gap-2 items-end', m.role === 'serena' ? 'flex-row-reverse' : '')}>
+            <span className="text-sm shrink-0">{m.role === 'feifei' ? '🌸' : '👤'}</span>
+            <div className="text-sm px-3 py-2 max-w-[78%] leading-relaxed" style={{
+              background: m.role === 'feifei' ? 'rgba(238,173,43,0.12)' : '#1a3050',
+              border: m.role === 'feifei' ? '1px solid rgba(238,173,43,0.2)' : '1px solid rgba(30,100,180,0.4)',
+              color: '#eead2b',
+              borderRadius: m.role === 'feifei' ? '16px 16px 16px 4px' : '16px 16px 4px 16px'
+            }}>{m.text}</div>
+          </div>
+        ))}
+        {loading && <div className="flex gap-2"><span className="text-sm">🌸</span><div className="text-xs text-white/30 px-3 py-2" style={{background:'rgba(238,173,43,0.08)', borderRadius:'16px 16px 16px 4px'}}>思考中...</div></div>}
+      </div>
+      {/* 输入框（固定不动） */}
+      <div className="shrink-0 px-3 py-2.5 flex gap-2 items-center" style={{background:'#16162a', borderTop:'1px solid rgba(255,255,255,0.06)'}}>
+        <input value={msg} onChange={e => setMsg(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()}
+          placeholder={loading ? '菲菲思考中...' : '跟菲菲说点什么...'}
+          disabled={loading}
+          ref={inputRef}
+          autoFocus
+          className="flex-1 rounded-xl px-3.5 py-2 text-sm focus:outline-none disabled:opacity-50"
+          style={{background:'#f0eefc', border:'1px solid rgba(139,92,246,0.3)', color:'#1a1a2a', colorScheme:'light'}}
+        />
+        <button onClick={send} disabled={loading} className="px-4 py-2 text-sm font-black rounded-xl disabled:opacity-50 transition-colors" style={{background:'#eead2b', color:'#0f0f0f'}}>
+          {loading ? '...' : '发送'}
+        </button>
+      </div>
+    </>
+  );
+};
+
 const DashboardView = ({ onNavigate }: { onNavigate: (p: Page, item?: any) => void }) => {
   const agents = [
-    { id: 'feifei',  name: '菲菲',   role: '文案专家', status: '执行中',   detail: '正在生成社交媒体文案...', progress: 65,  img: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=100&auto=format&fit=crop' },
-    { id: 'content', name: '内容助手', role: '内容策划', status: '待命',    detail: '准备就绪',                 progress: 0,   img: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=100&auto=format&fit=crop' },
-    { id: 'voice',   name: '声音助手', role: '音频剪辑', status: '执行中',   detail: '音频降噪处理中...',         progress: 30,  img: 'https://images.unsplash.com/photo-1554151228-14d9def656e4?q=80&w=100&auto=format&fit=crop' },
-    { id: 'video',   name: '视频助手', role: '视频后期', status: '等待确认', detail: '4K 视频渲染已完成',         progress: 100, img: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=100&auto=format&fit=crop' },
+    { id: 'feifei',  name: '菲菲',   role: '指挥官',   status: '执行中',   detail: '正在整理直播逐字稿...',       progress: 78,  emoji: '🌸' },
+    { id: 'alan',    name: 'Alan',   role: '英语教练', status: '执行中',   detail: '与轩轩进行Day1口语练习中',    progress: 60,  emoji: '🎤' },
+    { id: 'content', name: '内容助手', role: '内容策划', status: '等待确认', detail: '7天营Day1课程方案已生成',     progress: 100, emoji: '✍️' },
+    { id: 'voice',   name: '声音助手', role: '声音制作', status: '已完成',   detail: '招募视频旁白配音完成',        progress: 100, emoji: '🔊' },
   ];
 
   return (
-    <div className="flex flex-col gap-7 pb-10">
+    <div className="flex flex-col h-full gap-3 p-0">
       <Header title="仪表盘" subtitle="您的 AI 团队已就绪" />
 
-
-
       {/* Agent Cards - 4 in a row */}
-      <section className="px-8">
+      <section className="px-6">
         <div className="flex items-end justify-between mb-4">
           <h2 className="text-base font-black text-white tracking-tight">团队看板</h2>
           <span className="text-[9px] font-black text-white/25 uppercase tracking-widest">实时状态</span>
         </div>
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-4 gap-3 px-4">
           {agents.map(agent => (
             <motion.div
               key={agent.id}
               whileHover={{ y: -2, borderColor: 'rgba(238,173,43,0.3)' }}
               whileTap={{ scale: 0.97 }}
               onClick={() => onNavigate(agent.id === 'feifei' ? 'assistant-execution' : 'assistant-detail', agent)}
-              className="bg-[#1c1c1c] border border-white/8 rounded-[20px] p-5 flex flex-col items-center text-center cursor-pointer transition-all"
+              className="bg-[#1c1c1c] border border-white/8 rounded-xl p-2.5 flex flex-col items-center text-center cursor-pointer transition-all"
             >
-              <div className="relative mb-3">
-                <div className="size-14 rounded-2xl overflow-hidden border-2 border-white/10">
-                  <img src={agent.img} alt={agent.name} className="w-full h-full object-cover" />
+              <div className="relative mb-2">
+                <div className="size-10 rounded-xl overflow-hidden border border-white/10 flex items-center justify-center">
+                  <span className="text-2xl">{(agent as any).emoji || '🤖'}</span>
                 </div>
                 {agent.status === '执行中' && (
-                  <div className="absolute -bottom-1 -right-1 size-3 bg-green-500 rounded-full border-2 border-[#1c1c1c] animate-pulse" />
+                  <div className="absolute -bottom-0.5 -right-0.5 size-2.5 bg-green-500 rounded-full border border-[#1c1c1c] animate-pulse" />
                 )}
                 {agent.status === '等待确认' && (
-                  <div className="absolute -bottom-1 -right-1 size-3 bg-orange-500 rounded-full border-2 border-[#1c1c1c]" />
+                  <div className="absolute -bottom-0.5 -right-0.5 size-2.5 bg-orange-500 rounded-full border border-[#1c1c1c]" />
                 )}
               </div>
-              <p className="text-white text-sm font-black tracking-tight">{agent.name}</p>
-              <span className="text-white/35 text-[9px] font-bold mt-0.5 uppercase tracking-widest">{agent.role}</span>
+              <p className="text-white text-xs font-black tracking-tight">{agent.name}</p>
+              <span className="text-white/35 text-[8px] font-bold mt-0.5 uppercase tracking-widest">{agent.role}</span>
               <span className={cn(
-                'mt-2 text-[8px] font-black px-2.5 py-1 rounded-full uppercase tracking-[0.15em]',
+                'mt-1.5 text-[7px] font-black px-2 py-0.5 rounded-full uppercase tracking-[0.15em]',
                 agent.status === '执行中'   ? 'bg-[#eead2b]/15 text-[#eead2b]' :
                 agent.status === '等待确认' ? 'bg-orange-500/15 text-orange-400' :
                 'bg-white/5 text-white/30'
@@ -409,7 +489,7 @@ const DashboardView = ({ onNavigate }: { onNavigate: (p: Page, item?: any) => vo
       </section>
 
       {/* Latest News */}
-      <section className="px-8">
+      <section className="px-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-black text-white tracking-tight">最新动态</h2>
           <motion.button
@@ -430,8 +510,8 @@ const DashboardView = ({ onNavigate }: { onNavigate: (p: Page, item?: any) => vo
               <Sparkles size={22} className="text-[#eead2b]" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-black text-white truncate">项目 "Apollo" 进度更新</p>
-              <p className="text-xs text-white/40 mt-1 line-clamp-2 leading-relaxed">菲菲已完成初步品牌视觉方案，等待您的审阅。</p>
+              <p className="text-sm font-black text-white truncate">7天英语营 · Day1课程就绪</p>
+              <p className="text-xs text-white/40 mt-1 line-clamp-2 leading-relaxed">Alan已上线，轩轩等8位学员今日开始口语练习。</p>
               <div className="flex items-center gap-2 mt-2">
                 <span className="size-1.5 rounded-full bg-[#eead2b]" />
                 <p className="text-[9px] font-black text-[#eead2b] uppercase tracking-widest">2分钟前</p>
@@ -447,8 +527,8 @@ const DashboardView = ({ onNavigate }: { onNavigate: (p: Page, item?: any) => vo
               <ShieldCheck size={22} className="text-orange-400" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-black text-white truncate">2 项内容待您审核</p>
-              <p className="text-xs text-white/40 mt-1 line-clamp-2 leading-relaxed">菲菲提交的 Hero 文案方案正等待您的决策。</p>
+              <p className="text-sm font-black text-white truncate">1 项内容待您审核</p>
+              <p className="text-xs text-white/40 mt-1 line-clamp-2 leading-relaxed">AI调色盘创始人文章已完成，等待Serena审阅发布。</p>
               <div className="flex items-center gap-2 mt-2">
                 <span className="size-1.5 rounded-full bg-orange-400 animate-pulse" />
                 <p className="text-[9px] font-black text-orange-400 uppercase tracking-widest">需要关注</p>
@@ -458,36 +538,35 @@ const DashboardView = ({ onNavigate }: { onNavigate: (p: Page, item?: any) => vo
         </div>
       </section>
 
-      {/* 桌面：对话框 / 手机：快捷入口 */}
-      <section className="px-8">
-        <div className="hidden lg:block">
-          <ChatInputBox />
+      {/* 手机：快捷入口 */}
+      {/* 手机快捷入口 */}
+      <section className="px-6 lg:hidden">
+        <div className="grid grid-cols-4 gap-4">
+          {[
+            { icon: Database,   label: '资产库',   target: 'asset-library',  colorClass: 'bg-blue-500/10 text-blue-400' },
+            { icon: LayoutGrid, label: '组织结构', target: 'org-structure',  colorClass: 'bg-indigo-500/10 text-indigo-400' },
+            { icon: BrainCircuit, label: '技能包', target: 'skill-packs',   colorClass: 'bg-[#eead2b]/10 text-[#eead2b]' },
+            { icon: CheckCircle2, label: '审核中枢', target: 'approval-hub', colorClass: 'bg-orange-500/10 text-orange-400' },
+          ].map((item, i) => (
+            <motion.div key={i} whileTap={{ scale: 0.93 }} onClick={() => onNavigate(item.target as Page)} className="flex flex-col items-center gap-2.5 cursor-pointer group">
+              <div className={cn('size-14 rounded-2xl flex items-center justify-center border border-white/5', item.colorClass)}><item.icon size={24} /></div>
+              <span className="text-[10px] font-bold text-white/40">{item.label}</span>
+            </motion.div>
+          ))}
         </div>
-        <div className="lg:hidden">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-black text-white tracking-tight">快捷入口</h2>
-          </div>
-          <div className="grid grid-cols-4 gap-4">
-            {[
-              { icon: Database,      label: '资产库',   target: 'asset-library',  colorClass: 'bg-blue-500/10 text-blue-400' },
-              { icon: LayoutGrid,    label: '组织结构', target: 'org-structure',   colorClass: 'bg-indigo-500/10 text-indigo-400' },
-              { icon: BrainCircuit,  label: '技能包',   target: 'skill-packs',    colorClass: 'bg-[#eead2b]/10 text-[#eead2b]' },
-              { icon: CheckCircle2,  label: '审核中枢', target: 'approval-hub',   colorClass: 'bg-orange-500/10 text-orange-400' },
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                whileTap={{ scale: 0.93 }}
-                onClick={() => onNavigate(item.target as Page)}
-                className="flex flex-col items-center gap-2.5 cursor-pointer group"
-              >
-                <div className={cn('size-14 rounded-2xl flex items-center justify-center border border-white/5 group-hover:border-white/10 transition-all', item.colorClass)}>
-                  <item.icon size={24} />
-                </div>
-                <span className="text-[10px] font-bold text-white/40 group-hover:text-white/60 transition-colors">{item.label}</span>
-              </motion.div>
-            ))}
-          </div>
+      </section>
+
+      {/* 桌面：对话框（填充剩余空间，消息滚动，输入框固定） */}
+      <section className="hidden lg:flex flex-col flex-1 mx-4 mb-4 rounded-2xl overflow-hidden min-h-0" style={{background:'#1a1a2a', border:'1px solid rgba(238,173,43,0.15)'}}>
+        {/* 标题栏 */}
+        <div className="px-4 py-2.5 flex items-center gap-2 shrink-0" style={{background:'#1e1e30', borderBottom:'1px solid rgba(255,255,255,0.06)'}}>
+          <span className="text-base">🌸</span>
+          <span className="text-xs font-black text-white tracking-wide">菲菲</span>
+          <span className="size-1.5 rounded-full bg-green-400 animate-pulse ml-0.5" />
+          <span className="text-[10px] text-green-400/80 font-bold">在线</span>
         </div>
+        {/* 消息区（内部滚动） */}
+        <DashboardChat />
       </section>
     </div>
   );
@@ -1588,13 +1667,12 @@ export default function App() {
   ];
 
   return (
-    <div className="flex h-screen bg-[#0d0d0d] font-sans overflow-hidden">
+    <div className="flex h-screen bg-[#120820] font-sans overflow-hidden">
       <LeftSidebar active={currentPage} onChange={navigate} />
 
       <main className={cn(
-        'flex-1 overflow-hidden',
-        isChat ? 'flex flex-col' : 'overflow-y-auto',
-        'lg:pb-0 pb-16'
+        'flex-1 bg-[#120820] lg:pb-0 pb-16',
+        currentPage === 'dashboard' ? 'flex flex-col overflow-hidden' : 'overflow-y-auto hide-scrollbar'
       )}>
         <AnimatePresence mode="wait">
           <motion.div
@@ -1603,7 +1681,7 @@ export default function App() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -12 }}
             transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
-            className={cn(isChat ? 'flex flex-col h-full' : 'min-h-full')}
+            className={currentPage === 'dashboard' ? 'flex flex-col flex-1 h-full overflow-hidden' : 'min-h-full'}
           >
             {currentPage === 'dashboard'            && <DashboardView onNavigate={navigate} />}
             {currentPage === 'task-flow'            && <TaskFlowView onNavigate={navigate} />}
@@ -1620,6 +1698,8 @@ export default function App() {
             {currentPage === 'assistant-detail'     && <AssistantDetailView onBack={goBack} onNavigate={navigate} source={getSourceLabel()} item={selectedItem} />}
           </motion.div>
         </AnimatePresence>
+
+
       </main>
 
       <RightActivityLog logs={activityLogs} />

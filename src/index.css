@@ -2,7 +2,7 @@
 
 @theme {
   --color-primary: #eead2b;
-  --color-bg-light: #f8f7f6;
+  --color-bg-light: #0d0d0d;
   --color-accent-gold: #d4af37;
   --color-muted-blue: #64748b;
   --color-success-green: #10b981;
@@ -14,15 +14,36 @@
   body {
     @apply bg-bg-light text-slate-900 antialiased;
   }
-  @media (min-width: 1024px) {
-    body:not(.light-mode) {
-      background: #0f0f1a !important;
-    }
+  :root {
+    --bg-main: #0f0f1a;
+    --bg-sidebar: #141414;
+    --bg-header: #111111;
+    --bg-card: #1c1c1c;
+    --text-main: #ffffff;
+    --text-muted: rgba(255,255,255,0.5);
+    --border: rgba(255,255,255,0.08);
   }
   body.light-mode {
+    --bg-sidebar: #ffffff;
+    --bg-header: #f8f7f6;
+    --bg-card: #f0eff8;
+    --text-main: #1a1a2e;
+    --text-muted: #666680;
+    --border: #e0dce8;
     background: #f5f4f0 !important;
     color: #1a1a2e !important;
   }
+  /* 两侧栏切换 */
+  body.light-mode aside { background: var(--bg-sidebar) !important; border-color: var(--border) !important; }
+  body.light-mode aside * { border-color: var(--border) !important; }
+  body.light-mode aside .bg-\[\#141414\] { background: var(--bg-sidebar) !important; }
+  body.light-mode aside .bg-\[\#1c1c1c\] { background: var(--bg-card) !important; }
+  body.light-mode aside [class*="bg-white\/"] { background: rgba(0,0,0,0.04) !important; }
+  body.light-mode aside [class*="text-white\/"] { color: var(--text-muted) !important; }
+  body.light-mode aside .text-white { color: var(--text-main) !important; }
+  body.light-mode aside [class*="border-white\/"] { border-color: var(--border) !important; }
+  /* 中间 main 区域完全隔离，不受 light-mode 影响 */
+  body.light-mode main { background: #120820 !important; color: inherit; }
 }
 
 .glass-card {
