@@ -14,36 +14,50 @@
   body {
     @apply bg-bg-light text-slate-900 antialiased;
   }
-  :root {
-    --bg-main: #0f0f1a;
-    --bg-sidebar: #141414;
-    --bg-header: #111111;
-    --bg-card: #1c1c1c;
-    --text-main: #ffffff;
-    --text-muted: rgba(255,255,255,0.5);
-    --border: rgba(255,255,255,0.08);
-  }
+
+  /* ===== LIGHT MODE：整套白色设计 ===== */
   body.light-mode {
-    --bg-sidebar: #ffffff;
-    --bg-header: #f8f7f6;
-    --bg-card: #f0eff8;
-    --text-main: #1a1a2e;
-    --text-muted: #666680;
-    --border: #e0dce8;
-    background: #f5f4f0 !important;
+    background: #f8f7f6 !important;
     color: #1a1a2e !important;
   }
-  /* 两侧栏切换 */
-  body.light-mode aside { background: var(--bg-sidebar) !important; border-color: var(--border) !important; }
-  body.light-mode aside * { border-color: var(--border) !important; }
-  body.light-mode aside .bg-\[\#141414\] { background: var(--bg-sidebar) !important; }
-  body.light-mode aside .bg-\[\#1c1c1c\] { background: var(--bg-card) !important; }
-  body.light-mode aside [class*="bg-white\/"] { background: rgba(0,0,0,0.04) !important; }
-  body.light-mode aside [class*="text-white\/"] { color: var(--text-muted) !important; }
-  body.light-mode aside .text-white { color: var(--text-main) !important; }
-  body.light-mode aside [class*="border-white\/"] { border-color: var(--border) !important; }
-  /* 中间 main 区域完全隔离，不受 light-mode 影响 */
-  body.light-mode main { background: #120820 !important; color: inherit; }
+  /* 侧栏 */
+  body.light-mode aside {
+    background: #ffffff !important;
+    border-color: #e8e6f0 !important;
+  }
+  /* header */
+  body.light-mode header {
+    background: #f8f7f6 !important;
+    border-color: #e8e6f0 !important;
+  }
+  /* 中间主区 */
+  body.light-mode main {
+    background: #f0eefc !important;
+  }
+  /* 深色背景卡片 → 白色 */
+  body.light-mode .bg-\[\#141414\],
+  body.light-mode .bg-\[\#1c1c1c\],
+  body.light-mode .bg-\[\#111111\],
+  body.light-mode .bg-\[\#0d0d0d\],
+  body.light-mode .bg-\[\#120820\] {
+    background: #ffffff !important;
+    border-color: #e8e6f0 !important;
+  }
+  /* 半透明白色 → 浅灰 */
+  body.light-mode [class*="bg-white\/"] {
+    background: rgba(0,0,0,0.04) !important;
+  }
+  /* 文字颜色 */
+  body.light-mode .text-white { color: #1a1a2e !important; }
+  body.light-mode [class*="text-white\/"] { color: rgba(26,26,46,0.5) !important; }
+  /* 边框 */
+  body.light-mode [class*="border-white\/"] { border-color: #e8e6f0 !important; }
+  /* 聊天框区域 */
+  body.light-mode [style*="#1a1a2a"],
+  body.light-mode [style*="#1e1e30"],
+  body.light-mode [style*="#16162a"] {
+    background: #f0eefc !important;
+  }
 }
 
 .glass-card {

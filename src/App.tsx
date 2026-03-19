@@ -187,7 +187,7 @@ const RightActivityLog = ({ logs }: { logs: ActivityLog[] }) => {
   }, [logs]);
 
   return (
-    <aside className="hidden lg:flex w-80 shrink-0 bg-[#141414] flex-col border-l border-white/5 h-screen overflow-hidden">
+    <aside className="hidden lg:flex w-full bg-[#141414] flex-col border-l border-white/5 h-screen overflow-hidden">
       <div className="px-5 py-[18px] border-b border-white/5 flex items-center justify-between">
         <div>
           <h3 className="text-white text-sm font-black">实时动态</h3>
@@ -247,8 +247,12 @@ const Header = ({ title, subtitle, rightElement }: {
       {subtitle && <p className="text-xs font-bold text-white/35 mt-1">{subtitle}</p>}
     </div>
     {rightElement || (
-      <button className="size-10 flex items-center justify-center rounded-full bg-white/5 border border-white/8">
-        <Bell size={19} className="text-white/45" />
+      <button
+        onClick={() => window.dispatchEvent(new CustomEvent('go-dashboard'))}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/8 hover:border-[#eead2b]/40 transition-all"
+      >
+        <Bell size={13} className="text-[#eead2b]" />
+        <span className="text-[10px] font-black text-[#eead2b] uppercase tracking-wider">实时动态</span>
       </button>
     )}
   </header>
@@ -387,7 +391,7 @@ const DashboardChat = () => {
       setMessages(prev => [...prev, { role: 'feifei', text: '网络波动，稍后再试 🌸' }]);
     } finally {
       setLoading(false);
-      inputRef.current?.focus();
+      setTimeout(() => inputRef.current?.focus(), 50);
     }
   };
   return (
@@ -1201,7 +1205,8 @@ const FileDetailView = ({ onBack, source, item }: { onBack: () => void; source?:
 );
 
 const SettingView = ({ onNavigate }: { onNavigate: (p: Page) => void }) => {
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState(false);
+  React.useEffect(() => { document.body.classList.add('light-mode'); }, []);
   const toggleTheme = () => {
     const next = !isDark;
     setIsDark(next);
@@ -1603,9 +1608,39 @@ const AssistantDetailView = ({ onBack, onNavigate, source, item }: { onBack: () 
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
+  React.useEffect(() => {
+    const handler = () => { setCurrentPage('dashboard'); setHistory([]); };
+    window.addEventListener('go-dashboard', handler);
+    return () => window.removeEventListener('go-dashboard', handler);
+  }, []);
   const [history, setHistory] = useState<Page[]>([]);
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>(initialLogs);
+
+  // 可拖拽分栏宽度
+  const [leftWidth, setLeftWidth] = useState(224);
+  const [centerWidth, setCenterWidth] = useState(380);
+  const dragging = React.useRef<null | 'left' | 'center'>(null);
+  const startX = React.useRef(0);
+  const startW = React.useRef(0);
+  const onDragStart = (e: React.MouseEvent, which: 'left' | 'center') => {
+    dragging.current = which;
+    startX.current = e.clientX;
+    startW.current = which === 'left' ? leftWidth : centerWidth;
+    e.preventDefault();
+  };
+  React.useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      if (!dragging.current) return;
+      const delta = e.clientX - startX.current;
+      if (dragging.current === 'left') setLeftWidth(Math.max(160, Math.min(320, startW.current + delta)));
+      else setCenterWidth(Math.max(280, Math.min(600, startW.current + delta)));
+    };
+    const onUp = () => { dragging.current = null; };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    return () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
+  }, []);
   const logIdRef = useRef(initialLogs.length + 1);
   const logIndexRef = useRef(0);
 
@@ -1667,23 +1702,42 @@ export default function App() {
   ];
 
   return (
-    <div className="flex h-screen bg-[#120820] font-sans overflow-hidden">
+    <div className="flex h-screen bg-[#120820] font-sans overflow-hidden select-none">
+      {/* 左侧导航（固定不变） */}
       <LeftSidebar active={currentPage} onChange={navigate} />
 
-      <main className={cn(
-        'flex-1 bg-[#120820] lg:pb-0 pb-16',
-        currentPage === 'dashboard' ? 'flex flex-col overflow-hidden' : 'overflow-y-auto hide-scrollbar'
-      )}>
+      {/* 中间：仪表盘永远固定 */}
+      <main style={{width: centerWidth}} className="flex flex-col shrink-0 bg-[#120820] overflow-hidden lg:pb-0 pb-16">
+        <DashboardView onNavigate={navigate} />
+      </main>
+      {/* 拖拽手柄2 */}
+      <div onMouseDown={e => onDragStart(e, 'center')} className="hidden lg:block w-1 shrink-0 cursor-col-resize hover:bg-[#eead2b]/40 bg-white/5 transition-colors" />
+
+      {/* 右边：点击导航后内容在这里呈现，默认显示实时日志 */}
+      <div className="hidden lg:flex flex-col flex-1 overflow-hidden">
+        {/* 查看动态按钮（非仪表盘页时显示） */}
+        {currentPage !== 'dashboard' && (
+          <div className="shrink-0 px-4 py-2.5 border-b border-white/5 flex items-center gap-2">
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate('dashboard')}
+              className="flex items-center gap-1.5 text-xs font-bold text-[#eead2b] hover:text-[#f5c242] transition-colors"
+            >
+              <span>📡</span>
+              <span>查看动态</span>
+            </motion.button>
+          </div>
+        )}
         <AnimatePresence mode="wait">
           <motion.div
             key={currentPage}
-            initial={{ opacity: 0, x: 12 }}
+            initial={{ opacity: 0, x: 16 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -12 }}
-            transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
-            className={currentPage === 'dashboard' ? 'flex flex-col flex-1 h-full overflow-hidden' : 'min-h-full'}
+            exit={{ opacity: 0, x: -16 }}
+            transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+            className="flex-1 overflow-y-auto hide-scrollbar h-full"
           >
-            {currentPage === 'dashboard'            && <DashboardView onNavigate={navigate} />}
+            {currentPage === 'dashboard'            && <RightActivityLog logs={activityLogs} />}
             {currentPage === 'task-flow'            && <TaskFlowView onNavigate={navigate} />}
             {currentPage === 'assistant-execution'  && <AssistantExecutionView onBack={goBack} onNavigate={navigate} source={getSourceLabel()} item={selectedItem} />}
             {currentPage === 'today-report'         && <TodayReportView onNavigate={navigate} />}
@@ -1698,11 +1752,7 @@ export default function App() {
             {currentPage === 'assistant-detail'     && <AssistantDetailView onBack={goBack} onNavigate={navigate} source={getSourceLabel()} item={selectedItem} />}
           </motion.div>
         </AnimatePresence>
-
-
-      </main>
-
-      <RightActivityLog logs={activityLogs} />
+      </div>
 
       {/* Mobile Bottom Navigation */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#141414] border-t border-white/8 flex">
