@@ -52,11 +52,11 @@
   body.light-mode [class*="text-white\/"] { color: rgba(26,26,46,0.5) !important; }
   /* 边框 */
   body.light-mode [class*="border-white\/"] { border-color: #e8e6f0 !important; }
-  /* 聊天框区域 */
-  body.light-mode [style*="#1a1a2a"],
-  body.light-mode [style*="#1e1e30"],
-  body.light-mode [style*="#16162a"] {
-    background: #f0eefc !important;
+  /* 聊天框区域 → 浅灰色（跟边栏按钮底色一致） */
+  body.light-mode .chat-box,
+  body.light-mode .chat-box > div {
+    background: #fafafa !important;
+    border-color: #e8e8ee !important;
   }
 }
 

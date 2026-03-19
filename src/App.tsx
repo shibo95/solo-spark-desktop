@@ -316,7 +316,7 @@ const ChatInputBox = () => {
     }
   };
   return (
-    <div className="rounded-2xl overflow-hidden" style={{background:'#1a1a2a', border:'1px solid rgba(238,173,43,0.15)'}}>
+    <div className="chat-box rounded-2xl overflow-hidden" style={{background:'#1a1a2a', border:'1px solid rgba(238,173,43,0.15)'}}>
       {/* 标题栏 */}
       <div className="px-4 py-2.5 flex items-center gap-2" style={{background:'#1e1e30', borderBottom:'1px solid rgba(255,255,255,0.06)'}}>
         <span className="text-base">🌸</span>
@@ -561,7 +561,7 @@ const DashboardView = ({ onNavigate }: { onNavigate: (p: Page, item?: any) => vo
       </section>
 
       {/* 桌面：对话框（填充剩余空间，消息滚动，输入框固定） */}
-      <section className="hidden lg:flex flex-col flex-1 mx-4 mb-4 rounded-2xl overflow-hidden min-h-0" style={{background:'#1a1a2a', border:'1px solid rgba(238,173,43,0.15)'}}>
+      <section className="chat-box hidden lg:flex flex-col flex-1 mx-4 mb-4 rounded-2xl overflow-hidden min-h-0" style={{background:'#1a1a2a', border:'1px solid rgba(238,173,43,0.15)'}}>
         {/* 标题栏 */}
         <div className="px-4 py-2.5 flex items-center gap-2 shrink-0" style={{background:'#1e1e30', borderBottom:'1px solid rgba(255,255,255,0.06)'}}>
           <span className="text-base">🌸</span>
@@ -1617,26 +1617,24 @@ export default function App() {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>(initialLogs);
 
-  // 可拖拽分栏宽度
-  const [leftWidth, setLeftWidth] = useState(224);
-  const [centerWidth, setCenterWidth] = useState(380);
-  const dragging = React.useRef<null | 'left' | 'center'>(null);
+  // 可拖拽右栏宽度（左栏固定，中间 flex-1，右栏可调）
+  const [rightWidth, setRightWidth] = useState(320);
+  const dragging = React.useRef(false);
   const startX = React.useRef(0);
   const startW = React.useRef(0);
-  const onDragStart = (e: React.MouseEvent, which: 'left' | 'center') => {
-    dragging.current = which;
+  const onDragStart = (e: React.MouseEvent) => {
+    dragging.current = true;
     startX.current = e.clientX;
-    startW.current = which === 'left' ? leftWidth : centerWidth;
+    startW.current = rightWidth;
     e.preventDefault();
   };
   React.useEffect(() => {
     const onMove = (e: MouseEvent) => {
       if (!dragging.current) return;
-      const delta = e.clientX - startX.current;
-      if (dragging.current === 'left') setLeftWidth(Math.max(160, Math.min(320, startW.current + delta)));
-      else setCenterWidth(Math.max(280, Math.min(600, startW.current + delta)));
+      const delta = startX.current - e.clientX;
+      setRightWidth(Math.max(240, Math.min(700, startW.current + delta)));
     };
-    const onUp = () => { dragging.current = null; };
+    const onUp = () => { dragging.current = false; };
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
     return () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
@@ -1706,15 +1704,15 @@ export default function App() {
       {/* 左侧导航（固定不变） */}
       <LeftSidebar active={currentPage} onChange={navigate} />
 
-      {/* 中间：仪表盘永远固定 */}
-      <main style={{width: centerWidth}} className="flex flex-col shrink-0 bg-[#120820] overflow-hidden lg:pb-0 pb-16">
+      {/* 中间：仪表盘永远固定，flex-1 自动撑满 */}
+      <main className="flex flex-col flex-1 bg-[#120820] overflow-hidden lg:pb-0 pb-16">
         <DashboardView onNavigate={navigate} />
       </main>
-      {/* 拖拽手柄2 */}
-      <div onMouseDown={e => onDragStart(e, 'center')} className="hidden lg:block w-1 shrink-0 cursor-col-resize hover:bg-[#eead2b]/40 bg-white/5 transition-colors" />
+      {/* 拖拽手柄 */}
+      <div onMouseDown={onDragStart} className="hidden lg:block w-1 shrink-0 cursor-col-resize hover:bg-[#eead2b]/40 bg-white/5 transition-colors" />
 
-      {/* 右边：点击导航后内容在这里呈现，默认显示实时日志 */}
-      <div className="hidden lg:flex flex-col flex-1 overflow-hidden">
+      {/* 右边：默认320px，可拖拽调宽 */}
+      <div style={{width: rightWidth}} className="hidden lg:flex flex-col shrink-0 overflow-hidden">
         {/* 查看动态按钮（非仪表盘页时显示） */}
         {currentPage !== 'dashboard' && (
           <div className="shrink-0 px-4 py-2.5 border-b border-white/5 flex items-center gap-2">
